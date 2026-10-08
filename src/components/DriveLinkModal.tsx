@@ -31,8 +31,12 @@ export const DriveLinkModal: React.FC<DriveLinkModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!url.trim()) return;
-    onSaveDriveLink(week.weekNumber, url.trim(), title.trim() || undefined);
+    let cleaned = url.trim();
+    if (!cleaned) return;
+    if (!cleaned.startsWith('http://') && !cleaned.startsWith('https://')) {
+      cleaned = `https://${cleaned}`;
+    }
+    onSaveDriveLink(week.weekNumber, cleaned, title.trim() || undefined);
     onClose();
   };
 

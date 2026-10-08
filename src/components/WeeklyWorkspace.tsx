@@ -315,6 +315,39 @@ export const WeeklyWorkspace: React.FC<WeeklyWorkspaceProps> = ({
           </div>
         </div>
 
+        {/* Prominent Google Drive Banner for Active Week */}
+        {currentWeek?.driveUrl && (
+          <div className="mt-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-slate-900 to-teal-950/60 border border-emerald-500/40 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
+                <Folder className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-bold text-white flex items-center gap-2 flex-wrap">
+                  <span className="truncate">{currentWeek.driveTitle || `Hafta ${activeWeek} Google Drive Klasörü`}</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    Aktif Bağlantı
+                  </span>
+                </h4>
+                <p className="text-xs text-slate-400 font-mono truncate max-w-md">
+                  {currentWeek.driveUrl}
+                </p>
+              </div>
+            </div>
+
+            <a
+              href={currentWeek.driveUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex-shrink-0 cursor-pointer active:scale-95"
+            >
+              <Folder className="w-4 h-4" />
+              <span>Google Drive'ı Aç</span>
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          </div>
+        )}
+
         {/* Tab Navigation */}
         <div className="mt-6 flex items-center gap-2 border-t border-slate-800 pt-4 overflow-x-auto">
           <button

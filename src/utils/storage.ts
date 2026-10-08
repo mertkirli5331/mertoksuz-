@@ -42,6 +42,15 @@ export function getWeeks(): WeekPlan[] {
     if (raw) {
       const parsed: WeekPlan[] = JSON.parse(raw);
       return parsed.map((w) => {
+        if (w.weekNumber === 3 && !w.driveUrl) {
+          return {
+            ...w,
+            title: '',
+            goal: '',
+            driveUrl: 'https://drive.google.com/drive/my-drive',
+            driveTitle: 'Hafta 3 - Google Drive Çalışma Klasörü',
+          };
+        }
         if (w.weekNumber <= 30) {
           return { ...w, title: '', goal: '' };
         }
@@ -79,7 +88,27 @@ export function saveTasks(tasks: Task[]): void {
 export function getDocuments(): WeeklyDocument[] {
   try {
     const raw = localStorage.getItem(DOCS_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed: WeeklyDocument[] = JSON.parse(raw);
+      if (!parsed.some((d) => d.weekNumber === 3 && d.type.startsWith('drive'))) {
+        const week3Doc: WeeklyDocument = {
+          id: 'doc-drive-week-3',
+          weekNumber: 3,
+          title: 'Hafta 3 - Google Drive Çalışma Klasörü',
+          type: 'drive_folder',
+          url: 'https://drive.google.com/drive/my-drive',
+          content: 'Hafta 3 çalışma ve teslim dosyaları Google Drive bağlantısı.',
+          updatedAt: new Date().toISOString(),
+          author: 'Mert Öksüz',
+          size: 'Bağlantı',
+          tags: ['Google Drive', 'Hafta 3', 'Klasör'],
+        };
+        const updated = [...parsed, week3Doc];
+        saveDocuments(updated);
+        return updated;
+      }
+      return parsed;
+    }
   } catch (e) {
     console.error('Error loading documents', e);
   }

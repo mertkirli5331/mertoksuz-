@@ -148,8 +148,12 @@ export function generateInitialWeeks(startDateStr: string): WeekPlan[] {
       notes: `Hafta ${i} detaylı çalışma planı ve hedefleri Mert Öksüz tarafından takip edilmektedir.`,
       isMilestone: desc.isMilestone,
       milestoneTitle: desc.milestoneTitle,
-      driveUrl: i === 1 ? 'https://drive.google.com/drive/my-drive' : undefined,
-      driveTitle: i === 1 ? 'Hafta 1 - Google Drive Proje Klasörü' : undefined,
+      driveUrl: i === 3 
+        ? 'https://drive.google.com/drive/my-drive' 
+        : (i === 1 ? 'https://drive.google.com/drive/my-drive' : undefined),
+      driveTitle: i === 3 
+        ? 'Hafta 3 - Google Drive Çalışma Klasörü' 
+        : (i === 1 ? 'Hafta 1 - Google Drive Proje Klasörü' : undefined),
     });
   }
 
@@ -330,5 +334,17 @@ Düzenleme Yetkisi: Mert Öksüz (Yönetici)`,
     author: 'Mert Öksüz',
     size: 'Tablo',
     tags: ['Google E-Tablolar', 'Analiz'],
+  },
+  {
+    id: 'doc-5',
+    weekNumber: 3,
+    title: 'Hafta 3 - Google Drive Çalışma Klasörü',
+    type: 'drive_folder',
+    url: 'https://drive.google.com/drive/my-drive',
+    content: 'Hafta 3 çalışma dosyaları, araştırma notları ve teslimat Google Drive bağlantısı.',
+    updatedAt: new Date().toISOString(),
+    author: 'Mert Öksüz',
+    size: 'Bağlantı',
+    tags: ['Google Drive', 'Hafta 3', 'Klasör'],
   },
 ];
