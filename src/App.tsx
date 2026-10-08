@@ -34,6 +34,10 @@ import { DocumentModal } from './components/DocumentModal';
 import { ProjectSettingsModal } from './components/ProjectSettingsModal';
 import { DriveLinkModal } from './components/DriveLinkModal';
 import { SyncDeviceModal } from './components/SyncDeviceModal';
+import { CloudSaveModal } from './components/CloudSaveModal';
+import { 
+  saveProjectToCloud, loadProjectFromCloud, getStoredCloudId 
+} from './services/cloudStorage';
 import { CheckCircle2, X } from 'lucide-react';
 
 export default function App() {
@@ -53,11 +57,27 @@ export default function App() {
   const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+  const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
   const [syncSuccessMessage, setSyncSuccessMessage] = useState<string | null>(null);
+
+  // Cloud State
+  const [cloudId, setCloudId] = useState<string | null>(getStoredCloudId);
+  const [isCloudSaving, setIsCloudSaving] = useState(false);
+  const [isCloudLoading, setIsCloudLoading] = useState(false);
 
   // Drive Link Modal state
   const [isDriveModalOpen, setIsDriveModalOpen] = useState(false);
   const [selectedWeekForDrive, setSelectedWeekForDrive] = useState<WeekPlan | null>(null);
+
+  // Task Modal state
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [targetTaskWeek, setTargetTaskWeek] = useState<number>(1);
+
+  // Document Modal state
+  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+  const [editingDoc, setEditingDoc] = useState<WeeklyDocument | null>(null);
+  const [targetDocWeek, setTargetDocWeek] = useState<number>(1);
 
   // Persistence & Save State
   const [lastSavedTime, setLastSavedTime] = useState<string>(() => {
@@ -97,27 +117,67 @@ export default function App() {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [settings, weeks, tasks, documents, timeLogs]);
-  
-  // Task Modal state
-  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [targetTaskWeek, setTargetTaskWeek] = useState<number>(1);
 
-  // Document Modal state
-  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
-  const [editingDoc, setEditingDoc] = useState<WeeklyDocument | null>(null);
-  const [targetDocWeek, setTargetDocWeek] = useState<number>(1);
+  const handleSaveToCloud = async () => {
+    setIsCloudSaving(true);
+    try {
+      const payload = {
+        settings,
+        phases,
+        weeks,
+        tasks,
+        documents,
+        timeLogs,
+        savedAt: new Date().toISOString(),
+      };
+      const result = await saveProjectToCloud(payload, cloudId);
+      setCloudId(result.cloudId);
+      const timeNow = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+      setLastSavedTime(timeNow);
+      setSyncSuccessMessage(`☁️ Projeniz ve tüm Google Drive bağlantılarınız başarıyla buluta kaydedildi!`);
+      setTimeout(() => setSyncSuccessMessage(null), 6000);
+    } catch (err: any) {
+      console.error('Cloud save failed', err);
+      throw err;
+    } finally {
+      setIsCloudSaving(false);
+    }
+  };
 
-  // Sync state to storage
-  useEffect(() => {
-    saveProjectSettings(settings);
-  }, [settings]);
+  const handleLoadFromCloud = async (targetCloudId: string) => {
+    setIsCloudLoading(true);
+    try {
+      const data = await loadProjectFromCloud(targetCloudId);
+      if (data) {
+        if (data.settings) { setSettings(data.settings); saveProjectSettings(data.settings); }
+        if (data.phases) { setPhases(data.phases); savePhases(data.phases); }
+        if (data.weeks) { setWeeks(data.weeks); saveWeeks(data.weeks); }
+        if (data.tasks) { setTasks(data.tasks); saveTasks(data.tasks); }
+        if (data.documents) { setDocuments(data.documents); saveDocuments(data.documents); }
+        if (data.timeLogs) { setTimeLogs(data.timeLogs); saveTimeLogs(data.timeLogs); }
+        setCloudId(targetCloudId);
+        setSyncSuccessMessage('☁️ Projeniz ve tüm Google Drive linkleriniz buluttan başarıyla yüklendi!');
+        setTimeout(() => setSyncSuccessMessage(null), 5000);
+      }
+    } catch (err: any) {
+      console.error('Cloud load failed', err);
+      throw err;
+    } finally {
+      setIsCloudLoading(false);
+    }
+  };
 
-  // Check URL hash for cross-device sync payload (e.g. from QR code scan on phone)
+  // Check URL hash for cloud load or cross-device sync payload
   useEffect(() => {
     try {
       const hash = window.location.hash;
-      if (hash.startsWith('#sync=')) {
+      if (hash.startsWith('#cloud=')) {
+        const targetId = hash.replace('#cloud=', '').trim();
+        if (targetId) {
+          handleLoadFromCloud(targetId);
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+      } else if (hash.startsWith('#sync=')) {
         const encoded = hash.replace('#sync=', '');
         const decodedJson = decodeURIComponent(escape(atob(encoded)));
         const parsed = JSON.parse(decodedJson);
@@ -137,7 +197,7 @@ export default function App() {
         }
       }
     } catch (err) {
-      console.error('Sync hash parsing error', err);
+      console.error('Sync/cloud hash parsing error', err);
     }
   }, []);
 
@@ -370,6 +430,7 @@ export default function App() {
         onOpenTaskModal={() => handleOpenTaskModal(activeWeek)}
         onOpenTimerModal={() => setIsTimerModalOpen(true)}
         onOpenSyncModal={() => setIsSyncModalOpen(true)}
+        onOpenCloudModal={() => setIsCloudModalOpen(true)}
         onOpenSettings={() => setIsSettingsModalOpen(true)}
         onSaveAll={handleSaveAll}
         lastSavedTime={lastSavedTime}
@@ -477,10 +538,12 @@ export default function App() {
             activeWeek={activeWeek}
             onOpenTimerModal={() => setIsTimerModalOpen(true)}
             onOpenSyncModal={() => setIsSyncModalOpen(true)}
+            onOpenCloudModal={() => setIsCloudModalOpen(true)}
             onSaveAll={handleSaveAll}
             onExportJSON={handleExportJSON}
             lastSavedTime={lastSavedTime}
             isSaving={isSaving}
+            cloudId={cloudId}
           />
 
         </div>
@@ -536,6 +599,16 @@ export default function App() {
         onClose={() => setIsSyncModalOpen(false)}
         weeks={weeks}
         settings={settings}
+      />
+
+      <CloudSaveModal
+        isOpen={isCloudModalOpen}
+        onClose={() => setIsCloudModalOpen(false)}
+        cloudId={cloudId}
+        onSaveToCloud={handleSaveToCloud}
+        onLoadFromCloud={handleLoadFromCloud}
+        isCloudSaving={isCloudSaving}
+        isCloudLoading={isCloudLoading}
       />
 
       <ProjectSettingsModal

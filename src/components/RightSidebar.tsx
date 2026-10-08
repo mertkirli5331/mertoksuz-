@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Clock, Calendar, Timer, Play, Pause, RotateCcw, 
   Smartphone, QrCode, Copy, Check, ExternalLink, 
-  Folder, Shield, Flame, TrendingUp, Save, Download, CheckCircle2 
+  Folder, Shield, Flame, TrendingUp, Save, Download, CheckCircle2, Cloud, CloudUpload 
 } from 'lucide-react';
 import { ProjectSettings, WeekPlan, Task } from '../types/project';
 
@@ -13,10 +13,12 @@ interface RightSidebarProps {
   activeWeek: number;
   onOpenTimerModal: () => void;
   onOpenSyncModal: () => void;
+  onOpenCloudModal: () => void;
   onSaveAll: () => void;
   onExportJSON: () => void;
   lastSavedTime: string;
   isSaving: boolean;
+  cloudId: string | null;
 }
 
 export const RightSidebar: React.FC<RightSidebarProps> = ({
@@ -26,10 +28,12 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   activeWeek,
   onOpenTimerModal,
   onOpenSyncModal,
+  onOpenCloudModal,
   onSaveAll,
   onExportJSON,
   lastSavedTime,
   isSaving,
+  cloudId,
 }) => {
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [copied, setCopied] = useState(false);
@@ -172,6 +176,39 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         {lastSavedTime && (
           <div className="text-[11px] text-center text-slate-400 pt-1 font-mono">
             Son Kayıt: <strong className="text-emerald-400">{lastSavedTime}</strong>
+          </div>
+        )}
+      </div>
+
+      {/* 3. BULUTA KAYDET KARTI */}
+      <div className="bg-slate-900/90 border border-sky-500/30 rounded-3xl p-5 shadow-xl space-y-3 bg-gradient-to-b from-slate-900 to-sky-950/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Cloud className="w-4 h-4 text-sky-400" />
+            <h3 className="font-extrabold text-xs text-white uppercase tracking-wider">
+              Bulut Senkronizasyonu
+            </h3>
+          </div>
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full border border-sky-500/20">
+            {cloudId ? 'Bulutta Aktif' : 'Bulut Deposu'}
+          </span>
+        </div>
+
+        <p className="text-xs text-slate-300 leading-relaxed">
+          Tüm haftaları ve Google Drive linklerinizi <strong>buluta kaydedin</strong>; herhangi bir telefondan anında açın.
+        </p>
+
+        <button
+          onClick={onOpenCloudModal}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-sky-500/25 transition-all cursor-pointer active:scale-95"
+        >
+          <CloudUpload className="w-4 h-4" />
+          <span>Buluta Kaydet / Yükle</span>
+        </button>
+
+        {cloudId && (
+          <div className="text-[10px] text-slate-400 font-mono truncate bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-center">
+            Bulut ID: <span className="text-sky-300">{cloudId.substring(0, 16)}...</span>
           </div>
         )}
       </div>

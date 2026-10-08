@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   Calendar, FolderGit2, Kanban, BarChart3, 
-  Smartphone, Timer, Plus, Settings, Sparkles, Save, CheckCircle2 
+  Smartphone, Timer, Plus, Settings, Sparkles, Save, CheckCircle2, Cloud 
 } from 'lucide-react';
 
 interface MenuBarProps {
@@ -11,6 +11,7 @@ interface MenuBarProps {
   onOpenTaskModal: () => void;
   onOpenTimerModal: () => void;
   onOpenSyncModal: () => void;
+  onOpenCloudModal: () => void;
   onOpenSettings: () => void;
   onSaveAll: () => void;
   lastSavedTime: string;
@@ -24,6 +25,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
   onOpenTaskModal,
   onOpenTimerModal,
   onOpenSyncModal,
+  onOpenCloudModal,
   onOpenSettings,
   onSaveAll,
   lastSavedTime,
@@ -92,7 +94,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({
             {/* Prominent Save Button with Status Indicator */}
             <button
               onClick={onSaveAll}
-              title="Tüm eklediğiniz Google Drive linklerini ve görevleri hemen kaydeder"
+              title="Tüm eklediğiniz Google Drive linklerini ve görevleri hemen yerel diske kaydeder"
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-md whitespace-nowrap ${
                 isSaving
                   ? 'bg-amber-600 text-white animate-pulse'
@@ -115,6 +117,16 @@ export const MenuBar: React.FC<MenuBarProps> = ({
                   )}
                 </>
               )}
+            </button>
+
+            {/* Buluta Kaydet Button */}
+            <button
+              onClick={onOpenCloudModal}
+              title="Tüm proje ve Google Drive bağlantılarınızı buluta kaydeder"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-300 text-xs font-bold transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-md shadow-sky-500/10"
+            >
+              <Cloud className="w-4 h-4 text-sky-400" />
+              <span>Buluta Kaydet</span>
             </button>
 
             <button
