@@ -1,0 +1,6 @@
+{
+  "name": "Mert Öksüz",
+  "description": "38 haftalık proje takip, zaman planı, saat ve Google Drive dosya entegrasyon sistemi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
